@@ -1,0 +1,258 @@
+# load  packages
+install.packages("readxl")
+install.packages("BiocManager")  
+BiocManager::install("ropls")
+install.packages("Cairo")
+install.packages("ggsci")
+install.packages("tidyverse")
+install.packages("extrafont")
+install.packages("pROC")
+install.packages("ggtext")
+install.packages("ggplot2")
+install.packages("ggalt")
+install.packages("ggpubr")
+install.packages("rstatix")
+install.packages("spls")
+install.packages("randomForest")
+install.packages("e1071")
+install.packages("splines")
+install.packages("reshape2")
+install.packages("glue")
+library(readxl)
+library(Cairo)
+library(ropls)
+library(ggplot2)
+library(ggsci)
+library(tidyverse)
+library(extrafont)
+library(ggalt)
+library(ggpubr)
+library(ggtext)
+library(rstatix)
+library(spls)
+library(randomForest)
+library(e1071) 
+library(splines)
+library(reshape2)
+library(glue)
+loadfonts()
+
+##1 Read the data and analyze with PLA_DA
+###### Read the raw training data
+#table_test2<-read_excel ("MTBLS7623.xls",2)
+table_test2<-read_excel ("GSE90028.xls",2)
+dataMatrix2<-table_test2  
+dataMatrix2 <-t(dataMatrix2) 
+dataMatrix2 <-as.data.frame(dataMatrix2 ) 
+colnames(dataMatrix2 )= dataMatrix2 [1,]
+dataMatrix2 <-dataMatrix2 [-1,] 
+genderFc2<-as.factor(dataMatrix2 $MYKIND)
+n<-ncol(dataMatrix2 ) 
+dataMatrix2 <-dataMatrix2 [,-n]
+rowname2 <- rownames(dataMatrix2 )
+dataMatrix2 <- as.data.frame(lapply(dataMatrix2 ,as.numeric)) 
+rownames(dataMatrix2 )= rowname2 
+######Read the raw validation data
+#table_test1<-read_excel ("MTBLS7623.xls",3)
+table_test1<-read_excel ("GSE90028.xls",3) 
+dataMatrix1<-table_test1  
+dataMatrix1 <-t(dataMatrix1) 
+dataMatrix1 <-as.data.frame(dataMatrix1) 
+colnames(dataMatrix1)= dataMatrix1 [1,]
+dataMatrix1<-dataMatrix1 [-1,] 
+genderFc1<-as.factor(dataMatrix1 $MYKIND) 
+n<-ncol(dataMatrix1) 
+dataMatrix1 <-dataMatrix1[,-n]#
+rowname1<- rownames(dataMatrix1)
+dataMatrix1<- as.data.frame(lapply(dataMatrix1,as.numeric)) 
+rownames(dataMatrix1)= rowname1
+### Read training data and analyze
+#table_test <- read_excel ("MTBLS7623.xls",2)	
+table_test<-read_excel ("GSE90028.xls",2)
+#table_test<-read_excel ("metabolite.xls",3)
+dataMatrix<-table_test 
+#dataMatrix<-distinct(dataMatrix,dataMatrix[,1],.keep_all=TRUE)
+tail(dataMatrix)
+#dataMatrix<- dataMatrix [,-2]  
+dataMatrix <-t(dataMatrix)  
+dataMatrix <-as.data.frame(dataMatrix) 
+colnames(dataMatrix)= dataMatrix [1,]
+dataMatrix<-dataMatrix [-1,]
+genderFc<-as.factor(dataMatrix $MYKIND)
+##n<-ncol(dataMatrix) 
+n<-which(names(dataMatrix) == "MYKIND")
+dataMatrix <-dataMatrix[,-n]#
+rowname<- rownames(dataMatrix)
+dataMatrix<- as.data.frame(lapply(dataMatrix,as.numeric)) 
+rownames(dataMatrix)= rowname 
+plsda = opls(dataMatrix,genderFc)##PLSDA，, predI = 2
+if(plsda@summaryDF$pre==1)
+{
+plsda = opls(dataMatrix,genderFc , predI = 2)
+}
+genderFc
+
+## 2 perform PLA_DA analysis and generate a classification graph
+sample.score = plsda@scoreMN 
+sample.score=as.data.frame( sample.score) 
+#genderFc<-as.integer(genderFc)
+sample.score$gender<-genderFc 
+
+x_lab <- plsda @modelDF[1, "R2X"] * 100
+y_lab <- plsda @modelDF[2, "R2X"] * 100
+p = ggplot(sample.score, aes(p1, p2, color =factor( gender))) +
+  geom_hline(yintercept = 0, linetype = 'dashed', linewidth = 0.5) +
+  geom_vline(xintercept = 0, linetype = 'dashed', linewidth = 0.5) +
+  geom_point(size=2) +
+labs(x = paste0("p1(", x_lab, ")"), y = paste0("p2(", y_lab, ")"))+
+
+ geom_point(aes(-10,10 ), color = 'white') +
+stat_ellipse(level = 0.95, linetype = 'solid', linewidth = 1, show.legend = FALSE) +
+### xlim(-20,20)+ylim(-25,25) +
+### xlim(-30,30)+ylim(-45,45) + 
+### xlim(-10,10)+ylim(-10,10) +    
+
+###geom_point(aes(-10,10 ), color = 'white') +xlim(-30,30)+ylim(-45,45)+
+###geom_encircle(aes(group = gender), alpha = 0.9,color="black", size=2,expand=0.1, show.legend = F) +
+
+scale_color_manual(values = c('#008000','#FFA74F', '#001000', '#004000', '#002200')) +
+  theme_bw() +
+  theme(legend.position = c(0.9,0.9),
+    legend.text = element_text(color = 'black', size = 12, face = 'plain'),
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.text = element_text(color = 'black', size = 15, face = 'plain'),
+    axis.title = element_text(color = 'black', size = 15, face = 'plain'),
+axis.ticks = element_line(color = 'black'))
+p
+## 3 perform PLA_DA analysis to obtain the VIP value of the marker and display the VIP graph
+vip.score = as.data.frame(plsda@vipVn)  
+colnames(vip.score) = 'vip'
+vip.score$metabolites = rownames(vip.score)
+vip.score = vip.score[order(-vip.score$vip),]
+write.csv(as.data.frame(vip.score)," PLSDA_VIP.csv",row.names =FALSE)
+vip.score$metabolites=factor(vip.score$metabolites,levels= vip.score$metabolites) 
+p2 = ggplot(vip.score[vip.score$vip >=1.70,], aes(metabolites, vip)) +
+  geom_segment(aes(x = metabolites, xend = metabolites,
+                   y = 0, yend = vip)) +
+  geom_point(shape = 21, size= 5, color = '#008000' ,fill = '#008000') +
+  geom_point(aes(1,2.5), color = 'white') +
+  geom_hline(yintercept = 1, linetype = 'dashed') +
+  scale_y_continuous(expand = c(0,0)) +
+  labs(x = '', y = 'VIP value') +
+  theme_bw() +
+  theme(legend.position = 'none',
+        legend.text = element_text(color = 'black',size = 12, face = 'plain'),
+        panel.background = element_blank(),
+        panel.grid = element_blank(),
+        axis.text = element_text(color = 'black',size = 15, face = 'plain'),
+        axis.text.x = element_text(angle = 90 ,hjust = 0, vjust =1, lineheight =1.2),
+        axis.title = element_text(color = 'black',size = 15, face = 'plain'),
+        axis.ticks = element_line(color = 'black'),
+        axis.ticks.x = element_blank())
+ggsave(p2, filename = 'pls_VIP_0.pdf', 
+       width = 20, height = 10, device = cairo_pdf)
+
+p2
+
+### 4 Variable screening based on RPLS_DA 
+vip.score = as.data.frame(plsda@vipVn)  
+colnames(vip.score) = 'vip'
+vip.score$metabolites = rownames(vip.score)
+vip.score<-vip.score[which(vip.score$vip>1),]
+vip.score = vip.score[order(-vip.score$vip),]
+N= nrow(vip.score)
+R2X <- array(1: N)
+R2X<-rep(0,N)
+R2Y <- array(1: N)
+R2Y <-rep(0, N)
+Q2 <- array(1: N)
+Q2 <-rep(0, N)
+MA<-0
+MI<-0
+for(i in seq(2,N,by=1))
+{         
+  		otu_select <- rownames(vip.score)[1:i]
+Top25 <- dataMatrix [ ,c(otu_select)]
+plsda1 <-opls(Top25,genderFc)#, predI = 1, orthoI = NA)
+#if(plsda1@summaryDF$pre==1)
+{
+#plsda1 = opls(Top25,genderFc , predI = 2)
+}
+aa<-plsda1@summaryDF
+R2X [i]<-aa[,1]
+R2Y [i]<-aa[,2]
+Q2 [i]<-aa[,3]  
+if(MA<aa[,3])
+{
+MA<-aa[,3] 
+MI<-i
+} 
+} 
+colnames(vip.score) = 'vip'
+vip.score$metabolites = rownames(vip.score)
+vip.score = vip.score[order(-vip.score$vip),]
+write.csv(as.data.frame(vip.score)," PLSDA_VIP_new.csv",row.names =FALSE)
+Q2<-as.data.frame(Q2)
+Q2$num<-rownames(Q2)
+Q2<-Q2[-1,]  
+R2X <-as.data.frame(R2X)
+R2X $num<-rownames(R2X)
+R2X <- R2X [-1,]
+R2Y <-as.data.frame(R2Y)
+R2Y $num<-rownames(R2Y)
+R2Y <- R2Y [-1,]
+#Q2<-Q2[Q2!=0,] 
+Q2 <- Q2[!is.na(Q2$Q2), ] 
+R2Y <- R2Y [!is.na(R2Y $ R2Y), ] 
+R2X <- R2X [!is.na(R2X $ R2X), ] 
+plot(Q2$num,Q2$Q2,xlab="num",ylab="value", ylim =c(0.5,1.0), col="red",pch=2,cex=1.2,lwd=2,type='l')
+lines(R2Y$num,R2Y$R2Y,pch=2,cex=1.2,lwd=2,col="blue",type='l')
+legend("right", c("Q2", "R2Y"), lwd=2,col=c("red","blue"),bg ="white")
+abline(v = MI)
+
+## 5 Using the screened markers, validation, # select the top42 important VIPs
+otu_select <- rownames(vip.score)[1:MI]
+Top42 <- dataMatrix2[ ,c(otu_select)]
+Plsda42 <-opls(Top42,genderFc2) ##, predI = 2
+NewTop42 <- dataMatrix1 [ , c(otu_select)] 
+tab=table(genderFc1,predict(Plsda42, NewTop42)) 
+round(sum(diag(tab))/sum(tab)*100,2)
+tab
+
+## 6 perform RPLA_DA analysis using the selected markers, and cycle steps 2,3,4,5,6
+otu_select <- rownames(vip.score)[1:MI]
+Top25 <- dataMatrix[ ,c(otu_select)]
+plsda <-opls(Top25,genderFc) ##, predI = 2
+if(plsda@summaryDF$pre==1)
+{
+plsda = opls(Top25,genderFc , predI = 2)
+}
+
+## 7 Generate box plots
+otu_select <- rownames(vip.score)[1:MI]
+Top25 <- dataMatrix[ ,c(otu_select)]
+Top25<- as.data.frame(Top25)
+Top25<-scale(Top25)
+Top25<- as.data.frame(Top25)
+Top25$group <- genderFc
+tail(Top25)
+dat2 = gather(Top25,key = "gene",value = "expression",- group)
+#dat2$gene=factor(dat2$gene,ordered = TRUE,levels = paste0("gene",1:10))
+df_p_val1 <- dat2 %>% 
+  group_by(gene) %>% 
+  wilcox_test(formula = expression ~ group) %>% 
+  add_significance(p.col = 'p',cutpoints = c(0,0.001,0.01,0.05,1),symbols = c('***','**','*','ns')) %>% 
+  add_xy_position(x='group')
+
+ggplot(data = dat2)+
+  geom_boxplot(aes(x = group,y = expression,fill = group))+# color = group
+scale_fill_manual(values = c('#E21C21','#3A7CB5'))+
+stat_pvalue_manual(df_p_val1,label = '{p}',tip.length = 0)+# p.signif
+  theme_bw()+
+#theme(axis.text = element_text(color = 'black'),
+             #  legend.position = c(0.7,0.1),
+     #   legend.direction = 'horizontal')+
+
+  facet_wrap(~gene,nrow =2)
+

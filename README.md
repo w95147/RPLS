@@ -62,8 +62,6 @@ Arg_VIP_Order<- function(plsda,dd)
   #write.csv(as.data.frame(vip.score)," PLSDA_VIP.csv",row.names =FALSE)
   #VIP值保存到文件里面
   vip.score$metabolites=factor(vip.score$metabolites,levels= vip.score$metabolites) ## 转换成因子
-  ## as.character()可以把因子转换成原来的字符型，
-  ## as.numeric()可以把因子转换为纯粹的整数值
   p = ggplot(vip.score[vip.score$vip >=dd,], aes(metabolites, vip)) +
     geom_segment(aes(x = metabolites, xend = metabolites,
                      y = 0, yend = vip)) +
@@ -241,19 +239,19 @@ Merge_picture <-function(name1,dd)
 }
 ```
 # Example
-使用data文件夹中的GSE90028.xls作为例子，对RPLS相关算法进行复现。
-## 加载数据集
-# dataMatrix1：训练集样本数据框
-# genderFc1：  训练集样本分类变量
-# dataMatrix2：验证集样本数据框
-# genderFc2：  验证集样本分类变量
-# dataMatrix： 训练集转化为秩的数据集
-# genderFc：   PLSDA分析的分类变量
+使用data文件夹中的GSE90028.xls作为例子，对RPLS相关算法进行复现。  
+为了便于代码的理解，现对后续代码中出现的部分变量进行说明：  
+  dataMatrix1：训练集样本数据框  
+  genderFc1：  训练集样本分类变量  
+  dataMatrix2：验证集样本数据框  
+  genderFc2：  验证集样本分类变量  
+  dataMatrix： 训练集转化为秩的数据集  
+  genderFc：   PLSDA分析的分类变量  
+  Top42：      迭代过程中用于衔接的中间变量
 
-
-
-table_test<- read_excel ("GSE90028.xls",4)
-## 训练集原数据
+## 1.Adjust the format of raw data
+### raw data of training set
+```r
 table_test1<- read_excel ("GSE90028.xls",2)
 dataMatrix1<-table_test1 
 dataMatrix1 <-dataMatrix1%>%mutate(p=NULL, zhi1=NULL, zhi2=NULL, cpd_ID =NULL, HMDB =NULL)
@@ -274,7 +272,9 @@ if(plsda1@summaryDF$pre==1)
 {
   plsda1 = opls(dataMatrix1,genderFc1 , predI = 2)
 }
-## 验证数据
+```
+### raw data of validation set
+```r
 table_test2<- read_excel ("GSE90028.xls",3)
 dataMatrix2<-table_test2  
 dataMatrix2 <-dataMatrix2%>%mutate(p=NULL, zhi1=NULL, zhi2=NULL, cpd_ID =NULL, HMDB =NULL)
@@ -291,7 +291,16 @@ dataMatrix2 <- as.data.frame(lapply(dataMatrix2 ,as.numeric))
 rownames(dataMatrix2 )= rowname2
 colnames(dataMatrix2 )= colname2
 plsda2 = opls(dataMatrix2,genderFc2)
-## 训练集秩数据
+```
+## 2.Data analysis model based on RPLS_DA
+### Data transformation
+calculate the rank corresponding to the raw data, that is, sort the metabolite data in ascending order, and the subscript of the sorting is the rank of the raw data.
+```c
+aaaaaaaaaaaaaaaaaaaa
+```
+### Adjust the format of the rank data of training set and establish PLS model based on the rank data
+```r
+table_test<- read_excel ("GSE90028.xls",4)
 dataMatrix<-table_test 
 dataMatrix <-dataMatrix%>%mutate(p=NULL, zhi1=NULL, zhi2=NULL, cpd_ID =NULL, HMDB =NULL)
 dataMatrix <-t(dataMatrix)  
@@ -307,14 +316,16 @@ dataMatrix <- as.data.frame(lapply(dataMatrix ,as.numeric))
 rownames(dataMatrix )= rowname 
 colnames(dataMatrix )= colname
 #head(dataMatrix)
+## Establish PLS model
 plsda <-opls(dataMatrix,genderFc)
 if(plsda@summaryDF$pre==1)
 {
   plsda = opls(dataMatrix,genderFc , predI = 2)
 }
 Top42 <- dataMatrix
-
-# 2、PLSDA analysis
+```
+## 3.Variable screening model based on RPLS_DA
+```r
 dataMatrix0<- Top42
 p1<- Classification_picture (plsda, genderFc) ###分类图
 vip.score <- Arg_VIP_Order (plsda,dd=1) ####获取VIP值
@@ -324,34 +335,23 @@ MI<- Arg_screening (plsda, dataMatrix0, genderFc,dd=1.,"c") ###根据Q2Y和R2Y�
 #MI<-num
 #将每次迭代的plsda图、分类图、筛选过程中Q2Y和R2Y曲线图合并为一个图
 Merge_picture ("0000_300.tiff ",3) 
-# Merge _picture ("0000_300.tiff ",2)
+#Merge _picture ("0000_300.tiff ",2)
 ##获取筛选出的自变量
 otu_select <- rownames(vip.score)[1: MI]
-##获取筛选的自变量对应的样本数据，以对验证集数据进行预测
-Top42 <- dataMatrix0 [ ,c(otu_select)]
-plsda <-opls(Top42,genderFc)#
-##Top25:筛选自变量otu_select对应的原训练集样本数据
-Top25 <- dataMatrix1 [ ,c(otu_select)]##原始数据建立验证模型
-#PLSDA分析
+```
+## 4.预测并统计预测准确率
+```r
+##使用raw data建立模型
+Top25 <- dataMatrix1 [ ,c(otu_select)] ## Top25:筛选自变量otu_select对应的原训练集样本数据
 sacurine.oplsda<-opls(Top25, genderFc1)
-# Top250：otu_select对应的验证集样本数据
-Top250 <- dataMatrix2 [ ,c(otu_select)]##原始数据建立验证模型
-
-##预测并统计预测准确率
+##使用validation set进行预测
+Top250 <- dataMatrix2 [ ,c(otu_select)] ## Top250：otu_select对应的验证集样本数据
 tab=table(genderFc2,predict(sacurine.oplsda, Top250))
-round(sum(diag(tab))/sum(tab)*100,2)
+P <- round(sum(diag(tab))/sum(tab)*100,2)
+```
+## 5.Iterative 
+Assume the number of candidate biomarkers `otu_select` is N, the determine whether to continue the iteration based on N and the prediction rate P: if N＜Ne (the expected final number of  remaining biomarkers) or P＜Pe (the expected prediction rate), terminate the iteration (such as Ne = 10, Pe = 60%), and the markers in variable `otu_select` are the final screened biomarers. Otherwise, let `Top42 <- dataMatrix0 [ ,c(otu_select)]` and start the iteration from Step “3.Variable screening model based on RPLS_DA”.
+It should be highlighted that when the prediction rate P is lower than the expected value, if the number of remaining metabolites N is still large, the iteration can continue until (N＜Ne). This is because the prediction rate may increase again after removing redundant metabolites. Therefore, if P shows a fluctuating trend, the size of N should be comprehensively considered to select the stopping point;  if P shows a decreasing trend, the point where P is at its maximum should be chosen as the stopping point.  
 
-##评估预测率和筛选的自变量满足需求后，再画出筛选变量的箱线图
-KP<- BoxPlot (Top42, 2) 
-tiff(file="b_600.tiff",compression="lzw",units="in",res=600,pointsize=8,height=8,width=6)##  1in=2.54cm
-par(oma=c(1,1,1,1))
-KP
-pushViewport(viewport(x=0.02, y=0.97, width=1, height=1, angle=0))
-grid.text("b", gp=gpar(col="black", cex=2))
-dev.off()
-tiff(file="b_300.tiff",compression="lzw",units="in",res=300,pointsize=8,height=8.5,width=6)##  1in=2.54cm
-KP
-par(oma=c(1,1,1,1))
-pushViewport(viewport(x=0.02, y=0.97, width=1, height=1, angle=0))
-grid.text("b", gp=gpar(col="black", cex=2))
-dev.off()
+
+

@@ -1,9 +1,9 @@
 # 需要用到的自定义函数
 ## Classification_picture  
 此函数为分类图，返回样本分类图。根据偏最小二乘分析的结果对象plsda对样本进行分类。  
-  plsda：偏最小二乘分析的结果对象  
-  genderFc：样本分类对象  
-  sample.score：plsda中得分矩阵  
+  &nbsp;plsda：偏最小二乘分析的结果对象  
+  &nbsp;genderFc：样本分类对象  
+  &nbsp;sample.score：plsda中得分矩阵  
   注：为得到合适的图形，不同的数据集需要调节图形范围、置信系数、甚至成像函数。通常情况下成像选用函数stat_ellipse（），但是当样本数据非常少时，不能画出置信椭圆，需选用函数geom_encircle（）
 ```r
 Classification_picture <-function(plsda, genderFc)
@@ -45,10 +45,10 @@ Classification_picture <-function(plsda, genderFc)
  ```
 ## Arg_VIP_Order
 该函数根据自变量的重要程度得分进行排序，达到逆序排列的自变量。  
-  plsda：偏最小二乘分析的结果对象  
-  dd：阈值，舍弃VIP<dd的自变量  
-  vip.score：自变量的重要程度得分  
-  P：自变量VIP值图形，保存在文件pls_VIP_0.pdf中  
+  &nbsp;plsda：偏最小二乘分析的结果对象  
+  &nbsp;dd：阈值，舍弃VIP<dd的自变量  
+  &nbsp;vip.score：自变量的重要程度得分  
+  &nbsp;P：自变量VIP值图形，保存在文件pls_VIP_0.pdf中  
 ```r
 Arg_VIP_Order<- function(plsda,dd)
 {
@@ -86,13 +86,13 @@ Arg_VIP_Order<- function(plsda,dd)
 ```
 ## Arg_screening:
 此函数用于筛选R2Y和Q2最大的自变量组合。将每个plsda中R2Y和Q2的变化曲线保存到指定文件中，并返回筛选的自变量个数（自变量是从大到小排序的）。  
-  plsda：偏最小二乘分析的结果对象  
-  dataMatrix：做plsda分析的数据框，用于提取自变量对应的样本数据  
-  genderFc：样本的分类变量  
-  dd：阈值，仅筛选VIP>1的自变量  
-  zhimu：标识符，在R2Y和Q2的变化曲线上角做标记。  
-  vip.score：自变量的重要程度得分  
-  333_300.tiff:保存R2Y和Q2的变化曲线，分辨率为300
+  &nbsp;plsda：偏最小二乘分析的结果对象  
+  &nbsp;dataMatrix：做plsda分析的数据框，用于提取自变量对应的样本数据  
+  &nbsp;genderFc：样本的分类变量  
+  &nbsp; dd：阈值，仅筛选VIP>1的自变量  
+  &nbsp;zhimu：标识符，在R2Y和Q2的变化曲线上角做标记。  
+  &nbsp;vip.score：自变量的重要程度得分  
+  &nbsp;333_300.tiff:保存R2Y和Q2的变化曲线，分辨率为300
 ```r
 Arg_screening<- function(plsda, dataMatrix, genderFc,dd,zhimu) ###循环验证
 {
@@ -159,8 +159,8 @@ Arg_screening<- function(plsda, dataMatrix, genderFc,dd,zhimu) ###循环验证
 ```
 ## BoxPlot 
 画指定变量Top的箱线图，返回箱线图对象  
-  Top:变量数据框  
-  dd：箱线图的行数  
+  &nbsp;Top:变量数据框  
+  &nbsp;dd：箱线图的行数  
 ```r
 BoxPlot<- function(Top,dd) 
 {
@@ -191,12 +191,12 @@ BoxPlot<- function(Top,dd)
 ```
 ## Save_picture
 保存PLSDA与分类图。保存为分辨率为300的图像。  
-  plsda：PLSDA对象  
-  p1:分类图对象  
-  zhi1: plsda图像标识  
-  zhi2: p1图像标识  
-  111_300.tiff： plsda图像名称  
-  222_300.tiff： p1图像名称  
+  &nbsp;plsda：PLSDA对象  
+  &nbsp;p1:分类图对象  
+  &nbsp;zhi1: plsda图像标识  
+  &nbsp;zhi2: p1图像标识  
+  &nbsp;111_300.tiff： plsda图像名称  
+  &nbsp;222_300.tiff： p1图像名称  
 ```r
 Save_picture<-function(plsda, p1,zhi1,zhi2)
 {
@@ -216,8 +216,8 @@ Save_picture<-function(plsda, p1,zhi1,zhi2)
 ```
 ## Merge_picture
 将plsda图、分类图和筛选图合并为一幅图像，三个图像横向排列。返回合并图像对象。合并的图像存储为分辨率为300的图像。
-  name1：分辨率为300的图像名称
-  dd:合并图像的数量，有时候只合并plsda图、分类图，则dd=2
+  &nbsp;name1：分辨率为300的图像名称
+  &nbsp;dd:合并图像的数量，有时候只合并plsda图、分类图，则dd=2
 ```r
 Merge_picture <-function(name1,dd)
 {
@@ -241,13 +241,13 @@ Merge_picture <-function(name1,dd)
 # Example
 使用data文件夹中的GSE90028.xls作为例子，对RPLS相关算法进行复现。  
 为了便于代码的理解，现对后续代码中出现的部分变量进行说明：  
-  dataMatrix1：训练集样本数据框  
-  genderFc1：  训练集样本分类变量  
-  dataMatrix2：验证集样本数据框  
-  genderFc2：  验证集样本分类变量  
-  dataMatrix： 训练集转化为秩的数据集  
-  genderFc：   PLSDA分析的分类变量  
-  Top42：      迭代过程中用于衔接的中间变量
+  &nbsp;dataMatrix1：训练集样本数据框  
+  &nbsp;genderFc1：  训练集样本分类变量  
+  &nbsp;dataMatrix2：验证集样本数据框  
+  &nbsp;genderFc2：  验证集样本分类变量  
+  &nbsp;dataMatrix： 训练集转化为秩的数据集  
+  &nbsp;genderFc：   PLSDA分析的分类变量  
+  &nbsp;Top42：      迭代过程中用于衔接的中间变量
 
 ## 1.Adjust the format of raw data
 ### raw data of training set

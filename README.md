@@ -157,38 +157,7 @@ Arg_screening<- function(plsda, dataMatrix, genderFc,dd,zhimu) ###循环验证
   return (MI)
 }
 ```
-## BoxPlot 
-画指定变量Top的箱线图，返回箱线图对象  
-  &nbsp;Top:变量数据框  
-  &nbsp;dd：箱线图的行数  
-```r
-BoxPlot<- function(Top,dd) 
-{
-  Top<- as.data.frame(Top)
-  Top<-scale(Top)
-  Top<- as.data.frame(Top)
-  Top$group <- genderFc
-  tail(Top)
-  dat2 = gather(Top,key = "gene",value = "expression",- group)
-  #dat2$gene=factor(dat2$gene,ordered = TRUE,levels = paste0("gene",1:10))
-  df_p_val1 <- dat2 %>% 
-    group_by(gene) %>% 
-    wilcox_test(formula = expression ~ group) %>% 
-    add_significance(p.col = 'p',cutpoints = c(0,0.001,0.01,0.05,1),symbols = c('***','**','*','ns')) %>% 
-    add_xy_position(x='group')
-  
-  PP<-ggplot(data = dat2)+
-    geom_boxplot(aes(x = group,y = expression,fill = group))+# color = group
-    scale_fill_manual(values = c('#E21C21','#3A7CB5'))+
-    stat_pvalue_manual(df_p_val1,label = '{p}',tip.length = 0)+# p.signif
-    theme_bw()+
-    #theme(axis.text = element_text(color = 'black'),
-    #  legend.position = c(0.7,0.1),
-    #   legend.direction = 'horizontal')+
-    facet_wrap(~gene,nrow =dd)
-  return  (PP)
-}
-```
+
 ## Save_picture
 保存PLSDA与分类图。保存为分辨率为300的图像。  
   &nbsp;plsda：PLSDA对象  

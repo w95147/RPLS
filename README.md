@@ -1,4 +1,4 @@
-# 需要用到的函数
+# 需要用到的自定义函数
 ## Classification_picture  
 此函数为分类图，返回样本分类图。根据偏最小二乘分析的结果对象plsda对样本进行分类。  
   plsda：偏最小二乘分析的结果对象  
@@ -94,7 +94,7 @@ Arg_VIP_Order<- function(plsda,dd)
   dd：阈值，仅筛选VIP>1的自变量  
   zhimu：标识符，在R2Y和Q2的变化曲线上角做标记。  
   vip.score：自变量的重要程度得分  
-  333_300(600).tiff:保存R2Y和Q2的变化曲线，分辨率为300和600两种
+  333_300.tiff:保存R2Y和Q2的变化曲线，分辨率为300
 ```r
 Arg_screening<- function(plsda, dataMatrix, genderFc,dd,zhimu) ###循环验证
 {
@@ -145,17 +145,6 @@ Arg_screening<- function(plsda, dataMatrix, genderFc,dd,zhimu) ###循环验证
   Q2 <- Q2[!is.na(Q2$Q2), ]#删除缺失值
   R2Y <- R2Y [!is.na(R2Y $ R2Y), ] 
   R2X <- R2X [!is.na(R2X $ R2X), ] 
-  tiff(file="333_600.tiff",compression="lzw",units="in",res=600,pointsize=8,height=4,width=4)##  1in=2.54cm
-  par(oma=c(1,1,1,1))
-  plot(Q2$num,Q2$Q2,xlab="num",ylab="value", ylim =c(0.5,1.0), col="red",pch=2,cex=1.2,lwd=2,type='l')
-  lines(R2Y$num,R2Y$R2Y,pch=2,cex=1.2,lwd=2,col="blue",type='l')
-  axis(side=1,at=c(MI),label=c(MI),col.axis="red",line=-1)
-  legend("right", c("Q2", "R2Y"), lwd=2,col=c("red","blue"),bg ="white")
-  #abline(h = MA)
-  abline(v = MI) 
-  pushViewport(viewport(x=0.02, y=0.97, width=1, height=1, angle=0))
-  grid.text(zhimu, gp=gpar(col="black", cex=2))
-  dev.off()
   tiff(file="333_300.tiff",compression="lzw",units="in",res=300,pointsize=8,height=4,width=4)##  1in=2.54cm
   par(oma=c(1,1,1,1))
   plot(Q2$num,Q2$Q2,xlab="num",ylab="value", ylim =c(0.5,1.0), col="red",pch=2,cex=1.2,lwd=2,type='l')
@@ -170,7 +159,7 @@ Arg_screening<- function(plsda, dataMatrix, genderFc,dd,zhimu) ###循环验证
   return (MI)
 }
 ```
-# BoxPlot 
+## BoxPlot 
 画指定变量Top的箱线图，返回箱线图对象  
   Top:变量数据框  
   dd：箱线图的行数  
@@ -202,15 +191,15 @@ BoxPlot<- function(Top,dd)
   return  (PP)
 }
 ```
-# Save_picture
-保存PLSDA与分类图。保存为分辨率为300的图像。   
-  plsda：PLSDA对象
-  p1:分类图对象
-  zhi1: plsda图像标识
-#zhi2: p1图像标识
-#111_300.tiff： plsda图像名称
-#222_300.tiff： p1图像名称
-
+## Save_picture
+保存PLSDA与分类图。保存为分辨率为300的图像。  
+  plsda：PLSDA对象  
+  p1:分类图对象  
+  zhi1: plsda图像标识  
+  zhi2: p1图像标识  
+  111_300.tiff： plsda图像名称  
+  222_300.tiff： p1图像名称  
+```r
 Save_picture<-function(plsda, p1,zhi1,zhi2)
 {
   tiff(file="111_300.tiff",compression="lzw",units="in",res=300,pointsize=8,height=4,width=4)##  1in=2.54cm
@@ -226,11 +215,12 @@ Save_picture<-function(plsda, p1,zhi1,zhi2)
   grid.text(zhi2, gp=gpar(col="black", cex=2))
   dev.off()
 }
-
-#Merge_picture:将plsda图、分类图和筛选图合并为一幅图像，三个图像横向排列。返回合并图像对象.合并的图像存储为分辨率为300和分辨率为600的两种图像。
-#name1：分辨率为300的图像名称
-#name2: 分辨率为600的图像名称
-#dd:合并图像的数量，有时候只合并plsda图、分类图，则dd=2
+```
+## Merge_picture
+将plsda图、分类图和筛选图合并为一幅图像，三个图像横向排列。返回合并图像对象。合并的图像存储为分辨率为300的图像。
+  name1：分辨率为300的图像名称
+  dd:合并图像的数量，有时候只合并plsda图、分类图，则dd=2
+```r
 Merge_picture <-function(name1, name2,dd)
 {
   if(dd==3)
@@ -240,12 +230,6 @@ Merge_picture <-function(name1, name2,dd)
     a3<-image_read("333_300.tiff")
     p1<-image_append(c(a1,a2,a3))
     image_write(p1,name1)
-    
-    a1<-image_read("111_600.tiff")
-    a2<-image_read("222_600.tiff")
-    a3<-image_read("333_600.tiff")
-    p1<-image_append(c(a1,a2,a3))
-    image_write(p1,name2)
   }
   if(dd==2)
   {
@@ -253,81 +237,74 @@ Merge_picture <-function(name1, name2,dd)
     a2<-image_read("222_300.tiff")
     p1<-image_append(c(a1,a2))
     image_write(p1,name1)
-    
-    a1<-image_read("111_600.tiff")
-    a2<-image_read("222_600.tiff")
-    p1<-image_append(c(a1,a2))
-    image_write(p1,name2)
   }
 }
-
-
-
-
-#加载数据集
+```
+# Example
+使用data文件夹中的GSE90028.xls作为例子，对RPLS相关算法进行复现。
+## 加载数据集
 # dataMatrix1：训练集样本数据框
 # genderFc1：  训练集样本分类变量
 # dataMatrix2：验证集样本数据框
 # genderFc2：  验证集样本分类变量
-# dataMatrix： PLSDA分析数据框，可以是练集样本数据，或者是训练集转化为秩的数据集
+# dataMatrix： 训练集转化为秩的数据集
 # genderFc：   PLSDA分析的分类变量
 
-table_test1<- read_excel ("E:/肝损伤二次投稿/GSE90028.xls",2)
-table_test2<- read_excel ("E:/肝损伤二次投稿/GSE90028.xls",3)
-table_test<- read_excel ("E:/肝损伤二次投稿/GSE90028.xls",4)
-#原数据
-dataMatrix1<-table_test1  #保留读书来的数据，用新的数据框进行操作
+
+
+table_test<- read_excel ("GSE90028.xls",4)
+## 训练集原数据
+table_test1<- read_excel ("GSE90028.xls",2)
+dataMatrix1<-table_test1 
 dataMatrix1 <-dataMatrix1%>%mutate(p=NULL, zhi1=NULL, zhi2=NULL, cpd_ID =NULL, HMDB =NULL)
-dataMatrix1 <-t(dataMatrix1)  ##转置 行列互换
-dataMatrix1 <-as.data.frame(dataMatrix1 ) #好像是转置后，不是数据框了，转换成数据框
-colnames(dataMatrix1 )= dataMatrix1 [1,]#转换成数据库后，第一行是代谢名称，这条语句是把第一行作为列名
-dataMatrix1 <-dataMatrix1 [-1,] #删除第一行已经作为列名了所以删除
-genderFc1<-as.factor(dataMatrix1 $ MYKIND)# ID是加上去的分类变量，就是Y值，代表的是每一个样本的属性（健康人0，病人是1），直接转变成因子变量为PLS_DA分析做准备，相当于Y值
-n<-ncol(dataMatrix1 )  ##数据框列数
-dataMatrix1 <-dataMatrix1 [,-n]##去掉MYKIND列  ，这样dataMatrix就是X，genderFc是Y
+dataMatrix1 <-t(dataMatrix1) 
+dataMatrix1 <-as.data.frame(dataMatrix1 ) 
+colnames(dataMatrix1 )= dataMatrix1 [1,]
+dataMatrix1 <-dataMatrix1 [-1,] 
+genderFc1<-as.factor(dataMatrix1 $ MYKIND)# 
+n<-ncol(dataMatrix1 ) 
+dataMatrix1 <-dataMatrix1 [,-n]
 rowname1 <- rownames(dataMatrix1 )
 colname1 <-colnames(dataMatrix1 )
-dataMatrix1 <- as.data.frame(lapply(dataMatrix1 ,as.numeric)) ####读完文件后有些数据可能以文本格式读出来的，所以转换一下。数据转换成数值
-rownames(dataMatrix1 )= rowname1 ##经过
+dataMatrix1 <- as.data.frame(lapply(dataMatrix1 ,as.numeric)) 
+rownames(dataMatrix1 )= rowname1 
 colnames(dataMatrix1 )= colname1
 plsda1 = opls(dataMatrix1,genderFc1)##PLSDA，, predI = 2
 if(plsda1@summaryDF$pre==1)
 {
   plsda1 = opls(dataMatrix1,genderFc1 , predI = 2)
 }
-##验证数据
-dataMatrix2<-table_test2  #保留读书来的数据，用新的数据框进行操作
+## 验证数据
+table_test2<- read_excel ("GSE90028.xls",3)
+dataMatrix2<-table_test2  
 dataMatrix2 <-dataMatrix2%>%mutate(p=NULL, zhi1=NULL, zhi2=NULL, cpd_ID =NULL, HMDB =NULL)
-dataMatrix2 <-t(dataMatrix2)  ##转置 行列互换
-dataMatrix2 <-as.data.frame(dataMatrix2) #好像是转置后，不是数据框了，转换成数据框
-colnames(dataMatrix2 )= dataMatrix2 [1,]#转换成数据库后，第一行是代谢名称，这条语句是把第一行作为列名
-dataMatrix2 <-dataMatrix2 [-1,] #删除第一行已经作为列名了所以删除
-genderFc2<-as.factor(dataMatrix2 $ MYKIND)# ID是加上去的分类变量，就是Y值，代表的是每一个样本的属性（健康人0，病人是1），直接转变成因子变量为PLS_DA分析做准备，相当于Y值
-n<-ncol(dataMatrix2 )  ##数据框列数
-dataMatrix2 <-dataMatrix2 [,-n]##去掉MYKIND列  ，这样dataMatrix就是X，genderFc是Y
+dataMatrix2 <-t(dataMatrix2)  
+dataMatrix2 <-as.data.frame(dataMatrix2) 
+colnames(dataMatrix2 )= dataMatrix2 [1,]
+dataMatrix2 <-dataMatrix2 [-1,] 
+genderFc2<-as.factor(dataMatrix2 $ MYKIND)
+n<-ncol(dataMatrix2 )  
+dataMatrix2 <-dataMatrix2 [,-n]
 rowname2 <- rownames(dataMatrix2 )
 colname2 <-colnames(dataMatrix2 )
-dataMatrix2 <- as.data.frame(lapply(dataMatrix2 ,as.numeric)) ####读完文件后有些数据可能以文本格式读出来的，所以转换一下。数据转换成数值
-rownames(dataMatrix2 )= rowname2 ##经过
+dataMatrix2 <- as.data.frame(lapply(dataMatrix2 ,as.numeric)) 
+rownames(dataMatrix2 )= rowname2
 colnames(dataMatrix2 )= colname2
-#head(dataMatrix)
-Plsda2 = opls(dataMatrix2,genderFc2)##PLSDA，, predI = 2
-##训练数据
-table_test<- read_excel ("E:/肝损伤二次投稿/GSE90028.xls",2)
-dataMatrix<-table_test  #保留读书来的数据，用新的数据框进行操作
+plsda2 = opls(dataMatrix2,genderFc2)
+## 训练集秩数据
+dataMatrix<-table_test 
 dataMatrix <-dataMatrix%>%mutate(p=NULL, zhi1=NULL, zhi2=NULL, cpd_ID =NULL, HMDB =NULL)
-dataMatrix <-t(dataMatrix)  ##转置 行列互换
-dataMatrix <-as.data.frame(dataMatrix ) #好像是转置后，不是数据框了，转换成数据框
-colnames(dataMatrix )= dataMatrix [1,]#转换成数据库后，第一行是代谢名称，这条语句是把第一行作为列名
-dataMatrix <-dataMatrix [-1,] #删除第一行已经作为列名了所以删除
-genderFc<-as.factor(dataMatrix $ MYKIND)# ID是加上去的分类变量，就是Y值，代表的是每一个样本的属性（健康人0，病人是1），直接转变成因子变量为PLS_DA分析做准备，相当于Y值
-n<-ncol(dataMatrix )  ##数据框列数
-#dataMatrix <-dataMatrix [,-1]##代谢物原数据专用，
-dataMatrix <-dataMatrix [,-n]##去掉MYKIND列  ，这样dataMatrix就是X，genderFc是Y
+dataMatrix <-t(dataMatrix)  
+dataMatrix <-as.data.frame(dataMatrix ) 
+colnames(dataMatrix )= dataMatrix [1,]
+dataMatrix <-dataMatrix [-1,] 
+genderFc<-as.factor(dataMatrix $ MYKIND)
+n<-ncol(dataMatrix )  
+dataMatrix <-dataMatrix [,-n]
 rowname <- rownames(dataMatrix )
 colname <-colnames(dataMatrix )
-dataMatrix <- as.data.frame(lapply(dataMatrix ,as.numeric)) ####读完文件后有些数据可能以文本格式读出来的，所以转换一下。数据转换成数值
-rownames(dataMatrix )= rowname ##经过
+dataMatrix <- as.data.frame(lapply(dataMatrix ,as.numeric)) 
+rownames(dataMatrix )= rowname 
 colnames(dataMatrix )= colname
 #head(dataMatrix)
 plsda <-opls(dataMatrix,genderFc)
@@ -338,7 +315,6 @@ if(plsda@summaryDF$pre==1)
 Top42 <- dataMatrix
 
 # 2、PLSDA analysis
-
 dataMatrix0<- Top42
 ###分类图
 p1<- Classification_picture (plsda, genderFc) 

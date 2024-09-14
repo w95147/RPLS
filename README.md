@@ -1,23 +1,20 @@
-# 需要用到的自定义函数
+# Custom functions needed
 ## Classification_picture  
-此函数为分类图，返回样本分类图。根据偏最小二乘分析的结果对象plsda对样本进行分类。  
-  &nbsp;plsda：偏最小二乘分析的结果对象  
-  &nbsp;genderFc：样本分类对象  
-  &nbsp;sample.score：plsda中得分矩阵  
-  注：为得到合适的图形，不同的数据集需要调节图形范围、置信系数、甚至成像函数。通常情况下成像选用函数stat_ellipse（），但是当样本数据非常少时，不能画出置信椭圆，需选用函数geom_encircle（）
+This function returns the sample classification plot. It classifies samples based on the results of the Partial Least Squares Discriminant Analysis (PLS-DA) object.
+  &nbsp;plsda：The result object of PLS-DA    
+  &nbsp;genderFc：PLS-DA  
+  &nbsp;sample.score：Score matrix in PLS-DA  
+  Note: To obtain appropriate plots, it is necessary to adjust the plot range, confidence coefficient, and even the imaging function for different datasets. Typically, the function stat_ellipse() is used for imaging. However, when the sample size is very small and a confidence ellipse cannot be drawn, the function geom_encircle() should be used.
 ```r
 Classification_picture <-function(plsda, genderFc)
 {
-  sample.score = plsda@scoreMN#得分矩阵
-  sample.score=as.data.frame( sample.score)##转换成数据框
+  sample.score = plsda@scoreMN
+  sample.score=as.data.frame( sample.score)
   #genderFc<-as.integer(genderFc)
-  sample.score$gender<-genderFc##增加gender列
-  # 解释率
+  sample.score$gender<-genderFc
   x_lab <- plsda @modelDF[1, "R2X"] * 100
   y_lab <- plsda @modelDF[2, "R2X"] * 100
-  # 画图
   p = ggplot(sample.score, aes(p1, p2, color =factor( gender))) +
-    ###在排序图中根据个体属性（gender）给样本上色
     geom_hline(yintercept = 0, linetype = 'dashed', linewidth = 0.5) +
     geom_vline(xintercept = 0, linetype = 'dashed', linewidth = 0.5) +
     geom_point(size=2) +
@@ -26,9 +23,9 @@ Classification_picture <-function(plsda, genderFc)
     geom_point(aes(-40, 40), color = 'white') +#xlim(-40,40)+ylim(-50,50)+
     labs(x = paste0("p1(", x_lab, ")"), y = paste0("p2(", y_lab, ")"))+
     stat_ellipse(level = 0.98, linetype = 'solid', linewidth = 1, show.legend = FALSE) +
-    ##数据太少时，可能画不出置信（0.95）椭圆，改用下面的函数替代stat_ellipse
-    #geom_encircle(aes(group = gender), alpha = 0.9,color="black", size=2,expand=0.05, show.legend = F) +
-    ###代谢物数据专用 第一次expand=0.2，aes(-40, 40)第二次expand=0.15，aes(-20, 20)第三次expand=0.05，aes(-10, 10)
+    ## When the sample size is too small, it may not be possible to draw a 0.95 confidence ellipse. In such cases, use the following function instead of stat_ellipse:
+    # geom_encircle(aes(group = gender), alpha = 0.9,color="black", size=2,expand=0.05, show.legend = F) +
+    ### For metabolite data: First use expand=0.2, aes(-40, 40); second use expand=0.15, aes(-20, 20); third use expand=0.05, aes(-10, 10).
     scale_color_manual(values = c('#008000','#FFA74F', '#001000', '#004000', '#002200')) +
     theme_bw() +
     theme(legend.position = c(0.8,0.9),
@@ -44,24 +41,21 @@ Classification_picture <-function(plsda, genderFc)
 }
  ```
 ## Arg_VIP_Order
-该函数根据自变量的重要程度得分进行排序，达到逆序排列的自变量。  
-  &nbsp;plsda：偏最小二乘分析的结果对象  
-  &nbsp;dd：阈值，舍弃VIP<dd的自变量  
-  &nbsp;vip.score：自变量的重要程度得分  
-  &nbsp;P：自变量VIP值图形，保存在文件pls_VIP_0.pdf中  
+This function sorts the independent variables based on their importance scores, achieving a descending order of the independent variables. 
+  &nbsp;plsda：The result object of PLS-DA  
+  &nbsp;dd：Threshold, discarding independent variables with VIP < dd  
+  &nbsp;vip.score：Importance scores of the independent variables  
+  &nbsp;P：Plot of the VIP values of the independent variables, saved in the file pls_VIP_0.pdf  
 ```r
 Arg_VIP_Order<- function(plsda,dd)
 {
-  vip.score = as.data.frame(plsda@vipVn)  ##每个指标的重要程度得分
+  vip.score = as.data.frame(plsda@vipVn)  
   colnames(vip.score) = 'vip'
-  ### colnames函数来指定矩阵的列名称，vip.score只有一列
   vip.score$metabolites = rownames(vip.score)
-  ## vip.score增加一列，列名metabolites，值为vip.score行名
   vip.score = vip.score[order(-vip.score$vip),]
-  ##按照vip.score$vip，逆序排列
-  #write.csv(as.data.frame(vip.score)," PLSDA_VIP.csv",row.names =FALSE)
-  #VIP值保存到文件里面
-  vip.score$metabolites=factor(vip.score$metabolites,levels= vip.score$metabolites) ## 转换成因子
+  ## Descending order according to vip.score$vip
+  #write.csv(as.data.frame(vip.score)," PLSDA_VIP.csv",row.names =FALSE) # Save the VIP values to the file
+  vip.score$metabolites=factor(vip.score$metabolites,levels= vip.score$metabolites) 
   p = ggplot(vip.score[vip.score$vip >=dd,], aes(metabolites, vip)) +
     geom_segment(aes(x = metabolites, xend = metabolites,
                      y = 0, yend = vip)) +
@@ -85,18 +79,18 @@ Arg_VIP_Order<- function(plsda,dd)
 }
 ```
 ## Arg_screening:
-此函数用于筛选R2Y和Q2最大的自变量组合。将每个plsda中R2Y和Q2的变化曲线保存到指定文件中，并返回筛选的自变量个数（自变量是从大到小排序的）。  
-  &nbsp;plsda：偏最小二乘分析的结果对象  
-  &nbsp;dataMatrix：做plsda分析的数据框，用于提取自变量对应的样本数据  
-  &nbsp;genderFc：样本的分类变量  
-  &nbsp; dd：阈值，仅筛选VIP>1的自变量  
-  &nbsp;zhimu：标识符，在R2Y和Q2的变化曲线上角做标记。  
-  &nbsp;vip.score：自变量的重要程度得分  
-  &nbsp;333_300.tiff:保存R2Y和Q2的变化曲线，分辨率为300
+This function is used to screen the combination of independent variables with the highest R2Y and Q2. It saves the variation curves of R2Y and Q2 for each PLS-DA to a specified file and returns the number of selected independent variables (sorted in descending order).  
+  &nbsp;plsda：The result object of PLS-DA  
+  &nbsp;dataMatrix：Data frame used for PLS-DA analysis, for extracting sample data corresponding to the independent variables  
+  &nbsp;genderFc：Classification variable of the samples  
+  &nbsp; Threshold, only selecting independent variables with VIP > 1  
+  &nbsp;zhimu：Identifier, used to mark the corner of the R2Y and Q2 variation curves  
+  &nbsp;vip.score：Importance scores of the independent variables 
+  &nbsp;333_300.tiff:Saves the variation curves of R2Y and Q2, with a resolution of 300
 ```r
-Arg_screening<- function(plsda, dataMatrix, genderFc,dd,zhimu) ###循环验证
+Arg_screening<- function(plsda, dataMatrix, genderFc,dd,zhimu) 
 {
-  vip.score = as.data.frame(plsda@vipVn)  #用PLSDA的VIP值
+  vip.score = as.data.frame(plsda@vipVn) 
   colnames(vip.score) = 'vip'
   vip.score$metabolites = rownames(vip.score)
   vip.score<-vip.score[which(vip.score$vip>dd),]
@@ -125,22 +119,21 @@ Arg_screening<- function(plsda, dataMatrix, genderFc,dd,zhimu) ###循环验证
       MI<-i
     } 
   }
-  colnames(vip.score) = 'vip' ### colnames函数来指定矩阵的列名称，vip.score只有一列
-  vip.score$metabolites = rownames(vip.score) ## vip.score增加一列，列名metabolites，值为vip.score行名
+  colnames(vip.score) = 'vip' 
+  vip.score$metabolites = rownames(vip.score) 
   vip.score = vip.score[order(-vip.score$vip),]
-  ##按照vip.score$vip，逆序排列
   #write.csv(as.data.frame(vip.score)," PLSDA_VIP_new.csv",row.names =FALSE)
   Q2<-as.data.frame(Q2)
   Q2$num<-rownames(Q2)
-  Q2<-Q2[-1,]  #一个指标不能做模型，从前两个开始，所以删除第一个
+  Q2<-Q2[-1,]  # One single indicator cannot be used to build the model. So start from the first two, so delete the first one.
   R2X <-as.data.frame(R2X)
   R2X $num<-rownames(R2X)
   R2X <- R2X [-1,]
   R2Y <-as.data.frame(R2Y)
   R2Y $num<-rownames(R2Y)
   R2Y <- R2Y [-1,]
-  #Q2<-Q2[Q2!=0,] #删除0值
-  Q2 <- Q2[!is.na(Q2$Q2), ]#删除缺失值
+  #Q2<-Q2[Q2!=0,] #Remove zero values
+  Q2 <- Q2[!is.na(Q2$Q2), ] #Remove missing values
   R2Y <- R2Y [!is.na(R2Y $ R2Y), ] 
   R2X <- R2X [!is.na(R2X $ R2X), ] 
   tiff(file="333_300.tiff",compression="lzw",units="in",res=300,pointsize=8,height=4,width=4)##  1in=2.54cm

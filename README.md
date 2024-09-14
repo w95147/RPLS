@@ -64,7 +64,6 @@ Arg_VIP_Order<- function(plsda,dd)
   vip.score$metabolites=factor(vip.score$metabolites,levels= vip.score$metabolites) ## 转换成因子
   ## as.character()可以把因子转换成原来的字符型，
   ## as.numeric()可以把因子转换为纯粹的整数值
-  ##画图参数太多，一知半解就行了
   p = ggplot(vip.score[vip.score$vip >=dd,], aes(metabolites, vip)) +
     geom_segment(aes(x = metabolites, xend = metabolites,
                      y = 0, yend = vip)) +
@@ -171,19 +170,21 @@ Arg_screening<- function(plsda, dataMatrix, genderFc,dd,zhimu) ###循环验证
   return (MI)
 }
 ```
-# BoxPlot 画指定变量Top25的箱线图，返回箱线图对象
-#Top25:变量数据框
-#dd：箱线图的行数
-BoxPlot<- function(Top25,dd) ###箱线图
+# BoxPlot 
+画指定变量Top的箱线图，返回箱线图对象  
+  Top:变量数据框  
+  dd：箱线图的行数  
+```r
+BoxPlot<- function(Top,dd) 
 {
-  Top25<- as.data.frame(Top25)
-  Top25<-scale(Top25)
-  Top25<- as.data.frame(Top25)
-  Top25$group <- genderFc
-  tail(Top25)
-  dat2 = gather(Top25,key = "gene",value = "expression",- group)
+  Top<- as.data.frame(Top)
+  Top<-scale(Top)
+  Top<- as.data.frame(Top)
+  Top$group <- genderFc
+  tail(Top)
+  dat2 = gather(Top,key = "gene",value = "expression",- group)
   #dat2$gene=factor(dat2$gene,ordered = TRUE,levels = paste0("gene",1:10))
-  df_p_val1 <- dat2 %>% #计算组内P值
+  df_p_val1 <- dat2 %>% 
     group_by(gene) %>% 
     wilcox_test(formula = expression ~ group) %>% 
     add_significance(p.col = 'p',cutpoints = c(0,0.001,0.01,0.05,1),symbols = c('***','**','*','ns')) %>% 
@@ -200,30 +201,18 @@ BoxPlot<- function(Top25,dd) ###箱线图
     facet_wrap(~gene,nrow =dd)
   return  (PP)
 }
-#Save_picture:保存PLSDA与分类图。分别保存为分辨率为300和分辨率为600的图像。
-# plsda：PLSDA对象
-#p1:分类图对象
-#zhi1: plsda图像标识
+```
+# Save_picture
+保存PLSDA与分类图。保存为分辨率为300的图像。   
+  plsda：PLSDA对象
+  p1:分类图对象
+  zhi1: plsda图像标识
 #zhi2: p1图像标识
-#111_300（600）.tiff： plsda图像名称
-#222_300（600）.tiff： p1图像名称
+#111_300.tiff： plsda图像名称
+#222_300.tiff： p1图像名称
 
 Save_picture<-function(plsda, p1,zhi1,zhi2)
 {
-  tiff(file="111_600.tiff",compression="lzw",units="in",res=600,pointsize=8,height=4,width=4)##  1in=2.54cm
-  par(oma=c(1,1,1,1))
-  plot(plsda)
-  pushViewport(viewport(x=0.02, y=0.97, width=1, height=1, angle=0))
-  grid.text(zhi1, gp=gpar(col="black", cex=2))
-  dev.off()
-  
-  tiff(file="222_600.tiff",compression="lzw",units="in",res=600,pointsize=8,height=4,width=4)##  1in=2.54cm
-  par(oma=c(1,1,1,1))
-  plot(p1)
-  pushViewport(viewport(x=0.02, y=0.97, width=1, height=1, angle=0))
-  grid.text(zhi2, gp=gpar(col="black", cex=2))
-  dev.off()
-  
   tiff(file="111_300.tiff",compression="lzw",units="in",res=300,pointsize=8,height=4,width=4)##  1in=2.54cm
   par(oma=c(1,1,1,1))
   plot(plsda)

@@ -221,7 +221,7 @@ Save_picture<-function(plsda, p1,zhi1,zhi2)
   name1：分辨率为300的图像名称
   dd:合并图像的数量，有时候只合并plsda图、分类图，则dd=2
 ```r
-Merge_picture <-function(name1, name2,dd)
+Merge_picture <-function(name1,dd)
 {
   if(dd==3)
   {
@@ -316,21 +316,16 @@ Top42 <- dataMatrix
 
 # 2、PLSDA analysis
 dataMatrix0<- Top42
-###分类图
-p1<- Classification_picture (plsda, genderFc) 
-####VIP值
-vip.score <- Arg_VIP_Order (plsda,dd=1)
-##保存PLSDA图形和分类图形
-Save_picture (plsda,p1, "a","b") 
-###根据Q2Y和R2Y曲线图，筛选自变量。
-MI<- Arg_screening (plsda, dataMatrix0, genderFc,dd=1.,"c") 
+p1<- Classification_picture (plsda, genderFc) ###分类图
+vip.score <- Arg_VIP_Order (plsda,dd=1) ####获取VIP值
+Save_picture (plsda,p1, "a","b") ##保存PLSDA图形和分类图形
+MI<- Arg_screening (plsda, dataMatrix0, genderFc,dd=1.,"c") ###根据Q2Y和R2Y曲线图，筛选自变量。
 #由于Q2Y和R2Y可能不会同时达到极值，因此需要根据两条曲线的峰值人工设置筛选值，但主要参考的是Q2Y值。通常num就是Arg_screening返回的MI，也可在下面根据图形人工设置num值
 #MI<-num
 #将每次迭代的plsda图、分类图、筛选过程中Q2Y和R2Y曲线图合并为一个图
-Merge_picture ("0000_300.tiff ","0000_600.tiff",3) 
-# Merge _picture ("0000_300.tiff ","0000_600.tiff ",2)
-
-##获取筛选的自变量
+Merge_picture ("0000_300.tiff ",3) 
+# Merge _picture ("0000_300.tiff ",2)
+##获取筛选出的自变量
 otu_select <- rownames(vip.score)[1: MI]
 ##获取筛选的自变量对应的样本数据，以对验证集数据进行预测
 Top42 <- dataMatrix0 [ ,c(otu_select)]

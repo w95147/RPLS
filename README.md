@@ -210,8 +210,8 @@ To facilitate understanding of the code, the following variables appearing in th
   &nbsp;dataMatrix：  Data set that the training set converted to rank for PLS-DA analysis  
   &nbsp;genderFc：    Classification variable for PLS-DA analysis  
   &nbsp;Top42：       Intermediate variable during iterations
-
-## 1.Adjust the format of raw data
+## 1.Load packages
+## 2.Adjust the format of raw data
 ### raw data of training set
 ```r
 table_test1<- read_excel ("GSE90028.xls",2)
@@ -254,7 +254,7 @@ rownames(dataMatrix2 )= rowname2
 colnames(dataMatrix2 )= colname2
 plsda2 = opls(dataMatrix2,genderFc2)
 ```
-## 2.Data analysis model based on RPLS_DA
+## 3.Data analysis model based on RPLS_DA
 ### Data transformation
 calculate the rank corresponding to the raw data, that is, sort the metabolite data in ascending order, and the subscript of the sorting is the rank of the raw data.
 ```c
@@ -286,7 +286,7 @@ if(plsda@summaryDF$pre==1)
 }
 Top42 <- dataMatrix
 ```
-## 3.Variable screening model based on RPLS_DA
+## 4.Variable screening model based on RPLS_DA
 ```r
 dataMatrix0<- Top42
 p1<- Classification_picture (plsda, genderFc) 
@@ -301,7 +301,7 @@ Merge_picture ("0000_300.tiff ",3)
 ## Retrieve the selected independent variables
 otu_select <- rownames(vip.score)[1: MI]
 ```
-## 4.Predict and calculate the prediction accuracy
+## 5.Predict and calculate the prediction accuracy
 ```r
 ## Establish the model using raw data
 Top25 <- dataMatrix1 [ ,c(otu_select)] ## Top25: Select the sample data of the original training set corresponding to the independent variable  `otu_select`
@@ -311,9 +311,6 @@ Top250 <- dataMatrix2 [ ,c(otu_select)] ## Top250：Select the sample data of th
 tab=table(genderFc2,predict(sacurine.oplsda, Top250))
 P <- round(sum(diag(tab))/sum(tab)*100,2)
 ```
-## 5.Iterative 
+## 6.Iterative 
 Assume the number of candidate biomarkers `otu_select` is N, the determine whether to continue the iteration based on N and the prediction rate P: if N＜Ne (the expected final number of  remaining biomarkers) or P＜Pe (the expected prediction rate), terminate the iteration (such as Ne = 10, Pe = 60%), and the markers in variable `otu_select` are the final screened biomarers. Otherwise, let `Top42 <- dataMatrix0 [ ,c(otu_select)]` and start the iteration from Step “3.Variable screening model based on RPLS_DA”.  
 It should be highlighted that when the prediction rate P is lower than the expected value, if the number of remaining metabolites N is still large, the iteration can continue until (N＜Ne). This is because the prediction rate may increase again after removing redundant metabolites. Therefore, if P shows a fluctuating trend, the size of N should be comprehensively considered to select the stopping point;  if P shows a decreasing trend, the point where P is at its maximum should be chosen as the stopping point.  
-
-
-

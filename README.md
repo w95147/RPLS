@@ -1,6 +1,6 @@
 # Custom functions needed
 ## Classification_picture  
-This function returns the sample classification plot. It classifies samples based on the results of the Partial Least Squares Discriminant Analysis (PLS-DA) object.
+This function returns the sample classification plot. It classifies samples based on the results of the Partial Least Squares Discriminant Analysis (PLS-DA) object.  
   &nbsp;plsda：The result object of PLS-DA    
   &nbsp;genderFc：PLS-DA  
   &nbsp;sample.score：Score matrix in PLS-DA  
@@ -41,7 +41,7 @@ Classification_picture <-function(plsda, genderFc)
 }
  ```
 ## Arg_VIP_Order
-This function sorts the independent variables based on their importance scores, achieving a descending order of the independent variables. 
+This function sorts the independent variables based on their importance scores, achieving a descending order of the independent variables.  
   &nbsp;plsda：The result object of PLS-DA  
   &nbsp;dd：Threshold, discarding independent variables with VIP < dd  
   &nbsp;vip.score：Importance scores of the independent variables  
@@ -85,7 +85,7 @@ This function is used to screen the combination of independent variables with th
   &nbsp;genderFc：Classification variable of the samples  
   &nbsp; Threshold, only selecting independent variables with VIP > 1  
   &nbsp;zhimu：Identifier, used to mark the corner of the R2Y and Q2 variation curves  
-  &nbsp;vip.score：Importance scores of the independent variables 
+  &nbsp;vip.score：Importance scores of the independent variables  
   &nbsp;333_300.tiff:Saves the variation curves of R2Y and Q2, with a resolution of 300
 ```r
 Arg_screening<- function(plsda, dataMatrix, genderFc,dd,zhimu) 
@@ -150,9 +150,8 @@ Arg_screening<- function(plsda, dataMatrix, genderFc,dd,zhimu)
   return (MI)
 }
 ```
-
 ## Save_picture
-Save PLS-DA and classification plots as images with a resolution of 300. 
+Save PLS-DA and classification plots as images with a resolution of 300.   
   &nbsp;plsda: PLS-DA object  
   &nbsp;p1: Classification plot object  
   &nbsp;zhi1: PLS-DA image identifier  
@@ -203,9 +202,9 @@ Merge_picture <-function(name1,dd)
 # Example
 Use GSE90028.xls from the "data" folder as an example to reproduce the RPLS-related algorithms.  
 To facilitate understanding of the code, the following variables appearing in the subsequent code are explained:  
-  &nbsp;dataMatrix1： Sample data frame of training set 
+  &nbsp;dataMatrix1： Sample data frame of training set  
   &nbsp;genderFc1：   Sample classification variable of training set  
-  &nbsp;dataMatrix2： sample data frame of validation set 
+  &nbsp;dataMatrix2： sample data frame of validation set  
   &nbsp;genderFc2：   Sample classification variable of Validation set  
   &nbsp;dataMatrix：  Data set that the training set converted to rank for PLS-DA analysis  
   &nbsp;genderFc：    Classification variable for PLS-DA analysis  

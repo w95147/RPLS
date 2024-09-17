@@ -152,13 +152,13 @@ Arg_screening<- function(plsda, dataMatrix, genderFc,dd,zhimu)
 ```
 
 ## Save_picture
-保存PLSDA与分类图。保存为分辨率为300的图像。  
-  &nbsp;plsda：PLSDA对象  
-  &nbsp;p1:分类图对象  
-  &nbsp;zhi1: plsda图像标识  
-  &nbsp;zhi2: p1图像标识  
-  &nbsp;111_300.tiff： plsda图像名称  
-  &nbsp;222_300.tiff： p1图像名称  
+Save PLS-DA and classification plots as images with a resolution of 300. 
+  &nbsp;plsda: PLS-DA object  
+  &nbsp;p1: Classification plot object  
+  &nbsp;zhi1: PLS-DA image identifier  
+  &nbsp;zhi2: p1 image identifier  
+  &nbsp;111_300.tiff： PLS-DA image name  
+  &nbsp;222_300.tiff： p1 image name  
 ```r
 Save_picture<-function(plsda, p1,zhi1,zhi2)
 {
@@ -177,9 +177,9 @@ Save_picture<-function(plsda, p1,zhi1,zhi2)
 }
 ```
 ## Merge_picture
-将plsda图、分类图和筛选图合并为一幅图像，三个图像横向排列。返回合并图像对象。合并的图像存储为分辨率为300的图像。
-  &nbsp;name1：分辨率为300的图像名称
-  &nbsp;dd:合并图像的数量，有时候只合并plsda图、分类图，则dd=2
+Combine the PLS-DA plot, classification plot, and screening plot into a single image, arranged horizontally. Return the combined image object. The combined image is saved as an image with a resolution of 300.  
+  &nbsp;name1：The name of the image with a resolution of 300  
+  &nbsp;dd:Number of images to combine; sometimes only the PLS-DA plot and classification plot are combined, in which case dd=2  
 ```r
 Merge_picture <-function(name1,dd)
 {
@@ -201,15 +201,15 @@ Merge_picture <-function(name1,dd)
 }
 ```
 # Example
-使用data文件夹中的GSE90028.xls作为例子，对RPLS相关算法进行复现。  
-为了便于代码的理解，现对后续代码中出现的部分变量进行说明：  
-  &nbsp;dataMatrix1：训练集样本数据框  
-  &nbsp;genderFc1：  训练集样本分类变量  
-  &nbsp;dataMatrix2：验证集样本数据框  
-  &nbsp;genderFc2：  验证集样本分类变量  
-  &nbsp;dataMatrix： 训练集转化为秩的数据集  
-  &nbsp;genderFc：   PLSDA分析的分类变量  
-  &nbsp;Top42：      迭代过程中用于衔接的中间变量
+Use GSE90028.xls from the "data" folder as an example to reproduce the RPLS-related algorithms.  
+To facilitate understanding of the code, the following variables appearing in the subsequent code are explained:  
+  &nbsp;dataMatrix1： Sample data frame of training set 
+  &nbsp;genderFc1：   Sample classification variable of training set  
+  &nbsp;dataMatrix2： sample data frame of validation set 
+  &nbsp;genderFc2：   Sample classification variable of Validation set  
+  &nbsp;dataMatrix：  Data set that the training set converted to rank for PLS-DA analysis  
+  &nbsp;genderFc：    Classification variable for PLS-DA analysis  
+  &nbsp;Top42：       Intermediate variable during iterations
 
 ## 1.Adjust the format of raw data
 ### raw data of training set
@@ -221,7 +221,7 @@ dataMatrix1 <-t(dataMatrix1)
 dataMatrix1 <-as.data.frame(dataMatrix1 ) 
 colnames(dataMatrix1 )= dataMatrix1 [1,]
 dataMatrix1 <-dataMatrix1 [-1,] 
-genderFc1<-as.factor(dataMatrix1 $ MYKIND)# 
+genderFc1<-as.factor(dataMatrix1 $ MYKIND)
 n<-ncol(dataMatrix1 ) 
 dataMatrix1 <-dataMatrix1 [,-n]
 rowname1 <- rownames(dataMatrix1 )
@@ -289,25 +289,25 @@ Top42 <- dataMatrix
 ## 3.Variable screening model based on RPLS_DA
 ```r
 dataMatrix0<- Top42
-p1<- Classification_picture (plsda, genderFc) ###分类图
-vip.score <- Arg_VIP_Order (plsda,dd=1) ####获取VIP值
-Save_picture (plsda,p1, "a","b") ##保存PLSDA图形和分类图形
-MI<- Arg_screening (plsda, dataMatrix0, genderFc,dd=1.,"c") ###根据Q2Y和R2Y曲线图，筛选自变量。
-#由于Q2Y和R2Y可能不会同时达到极值，因此需要根据两条曲线的峰值人工设置筛选值，但主要参考的是Q2Y值。通常num就是Arg_screening返回的MI，也可在下面根据图形人工设置num值
-#MI<-num
-#将每次迭代的plsda图、分类图、筛选过程中Q2Y和R2Y曲线图合并为一个图
+p1<- Classification_picture (plsda, genderFc) 
+vip.score <- Arg_VIP_Order (plsda,dd=1) 
+Save_picture (plsda,p1, "a","b") 
+MI<- Arg_screening (plsda, dataMatrix0, genderFc,dd=1.,"c") ### Screen independent variables based on Q2Y and R2Y curves.
+# Since Q2Y and R2Y may not reach their peak values simultaneously, it is necessary to manually set the cutoff based on the peaks of both curves, with primary reference to the Q2Y value. Typically, `num` is the `MI` returned by `Arg_screening`. If not, you can manually set the `num` value based on the graph.
+# MI<-num
+# Combine the PLS-DA plot, classification plot, and Q2Y and R2Y curves plot during the screening process of each iteration into a single image .
 Merge_picture ("0000_300.tiff ",3) 
 #Merge _picture ("0000_300.tiff ",2)
-##获取筛选出的自变量
+## Retrieve the selected independent variables
 otu_select <- rownames(vip.score)[1: MI]
 ```
-## 4.预测并统计预测准确率
+## 4.Predict and calculate the prediction accuracy
 ```r
-##使用raw data建立模型
-Top25 <- dataMatrix1 [ ,c(otu_select)] ## Top25:筛选自变量otu_select对应的原训练集样本数据
+## Establish the model using raw data
+Top25 <- dataMatrix1 [ ,c(otu_select)] ## Top25: Select the sample data of the original training set corresponding to the independent variable  `otu_select`
 sacurine.oplsda<-opls(Top25, genderFc1)
-##使用validation set进行预测
-Top250 <- dataMatrix2 [ ,c(otu_select)] ## Top250：otu_select对应的验证集样本数据
+## Establish the model using validation set
+Top250 <- dataMatrix2 [ ,c(otu_select)] ## Top250：Select the sample data of the original training set corresponding to the independent variable  `otu_select`
 tab=table(genderFc2,predict(sacurine.oplsda, Top250))
 P <- round(sum(diag(tab))/sum(tab)*100,2)
 ```

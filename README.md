@@ -1,3 +1,6 @@
+# RPLS
+Correlation analysis (Pearson, Spearman, etc.), rank, PLS-DA were comprehensively applied to study the metabolomics data in this paper, and proposed a rank-based partial least squares (RPLS) algorithm.  Then a variable iterative screening model based on RPLS-DA was established to deal with small sample size metabolomics data, which improved the stability and generalization ability compared with other analysis methods.  In addition, a sample prediction model based on RPLS-DA was established to predict unknown attribution data.  As we show, RPLS-DA had better classification performance on metabolomics and transcriptomics data sets than ordinary PLS-DA and other methods, so it is more suitable for dealing with small sample size metabolomics data, which can avoid missing important biomarkers.  Moreover, our algorithm and models can not only be applied to metabolomics, they could also be extended to other omics analyses.  
+The file reproducibility demonstrates one exmaples. The program for convert the raw data to corresponding rank data and example dataset required are provided. 
 # Custom functions needed
 ## Classification_picture  
 This function returns the sample classification plot. It classifies samples based on the results of the Partial Least Squares Discriminant Analysis (PLS-DA) object.  

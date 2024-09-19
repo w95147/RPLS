@@ -5,10 +5,12 @@ The file reproducibility demonstrates one exmaples. The program for convert the 
 # Custom functions needed
 ## Classification_picture  
 This function returns the sample classification plot. It classifies samples based on the results of the Partial Least Squares Discriminant Analysis (PLS-DA) object.  
+
   &nbsp;plsda：The result object of PLS-DA    
   &nbsp;genderFc：PLS-DA  
   &nbsp;sample.score：Score matrix in PLS-DA  
-  Note: To obtain appropriate plots, it is necessary to adjust the plot range, confidence coefficient, and even the imaging function for different datasets. Typically, the function stat_ellipse() is used for imaging. However, when the sample size is very small and a confidence ellipse cannot be drawn, the function geom_encircle() should be used.
+  
+Note: To obtain appropriate plots, it is necessary to adjust the plot range, confidence coefficient, and even the imaging function for different datasets. Typically, the function stat_ellipse() is used for imaging. However, when the sample size is very small and a confidence ellipse cannot be drawn, the function geom_encircle() should be used.
 ```r
 Classification_picture <-function(plsda, genderFc)
 {
@@ -46,6 +48,7 @@ Classification_picture <-function(plsda, genderFc)
  ```
 ## Arg_VIP_Order
 This function sorts the independent variables based on their importance scores, achieving a descending order of the independent variables.  
+
   &nbsp;plsda：The result object of PLS-DA  
   &nbsp;dd：Threshold, discarding independent variables with VIP < dd  
   &nbsp;vip.score：Importance scores of the independent variables  
@@ -84,6 +87,7 @@ Arg_VIP_Order<- function(plsda,dd)
 ```
 ## Arg_screening:
 This function is used to screen the combination of independent variables with the highest R2Y and Q2. It saves the variation curves of R2Y and Q2 for each PLS-DA to a specified file and returns the number of selected independent variables (sorted in descending order).  
+
   &nbsp;plsda：The result object of PLS-DA  
   &nbsp;dataMatrix：Data frame used for PLS-DA analysis, for extracting sample data corresponding to the independent variables  
   &nbsp;genderFc：Classification variable of the samples  
@@ -156,6 +160,7 @@ Arg_screening<- function(plsda, dataMatrix, genderFc,dd,zhimu)
 ```
 ## Save_picture
 Save PLS-DA and classification plots as images with a resolution of 300.   
+
   &nbsp;plsda: PLS-DA object  
   &nbsp;p1: Classification plot object  
   &nbsp;zhi1: PLS-DA image identifier  
@@ -181,6 +186,7 @@ Save_picture<-function(plsda, p1,zhi1,zhi2)
 ```
 ## Merge_picture
 Combine the PLS-DA plot, classification plot, and screening plot into a single image, arranged horizontally. Return the combined image object. The combined image is saved as an image with a resolution of 300.  
+
   &nbsp;name1：The name of the image with a resolution of 300  
   &nbsp;dd:Number of images to combine; sometimes only the PLS-DA plot and classification plot are combined, in which case dd=2  
 ```r
@@ -205,7 +211,9 @@ Merge_picture <-function(name1,dd)
 ```
 # Example
 Use GSE90028.xls from the "data" folder as an example to reproduce the RPLS-related algorithms.  
+
 To facilitate understanding of the code, the following variables appearing in the subsequent code are explained:  
+
   &nbsp;dataMatrix1： Sample data frame of training set  
   &nbsp;genderFc1：   Sample classification variable of training set  
   &nbsp;dataMatrix2： sample data frame of validation set  
@@ -260,6 +268,7 @@ plsda2 = opls(dataMatrix2,genderFc2)
 ## 3.Data analysis model based on RPLS_DA
 ### Data transformation
 calculate the rank corresponding to the raw data, that is, sort the metabolite data in ascending order, and the subscript of the sorting is the rank of the raw data.  
+
 You can use the `ReadExcelFile.exe` program in the `RANK` folder for data transformation. Detailed instructions are available in the `Instruction.docx` file.
 ### Adjust the format of the rank data of training set and establish PLS model based on the rank data
 ```r
@@ -314,4 +323,5 @@ P <- round(sum(diag(tab))/sum(tab)*100,2)
 ```
 ## 6.Iterative 
 Assume the number of candidate biomarkers `otu_select` is N, the determine whether to continue the iteration based on N and the prediction rate P: if N＜Ne (the expected final number of  remaining biomarkers) or P＜Pe (the expected prediction rate), terminate the iteration (such as Ne = 10, Pe = 60%), and the markers in variable `otu_select` are the final screened biomarers. Otherwise, let `Top42 <- dataMatrix0 [ ,c(otu_select)]` and start the iteration from Step “3.Variable screening model based on RPLS_DA”.  
+
 It should be highlighted that when the prediction rate P is lower than the expected value, if the number of remaining metabolites N is still large, the iteration can continue until (N＜Ne). This is because the prediction rate may increase again after removing redundant metabolites. Therefore, if P shows a fluctuating trend, the size of N should be comprehensively considered to select the stopping point;  if P shows a decreasing trend, the point where P is at its maximum should be chosen as the stopping point.  

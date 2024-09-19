@@ -3,7 +3,7 @@ Correlation analysis (Pearson, Spearman, etc.), rank, PLS-DA were comprehensivel
 
 The `ReadExcelFile.exe` program in the `RANK` folder can be used to calculate the rank corresponding to the raw data, and detailed instructions are available in the `Instruction.docx` file.
 
-The file reproducibility demonstrates one exmaples. The program for convert the raw data to corresponding rank data and example dataset required are provided. 
+This file reproducibility demonstrates one exmaples. The program for convert the raw data to corresponding rank data and example dataset required are provided. 
 # Custom functions needed
 ## Classification_picture  
 This function returns the sample classification plot. It classifies samples based on the results of the Partial Least Squares Discriminant Analysis (PLS-DA) object.  

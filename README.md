@@ -255,10 +255,8 @@ plsda2 = opls(dataMatrix2,genderFc2)
 ```
 ## 3.Data analysis model based on RPLS_DA
 ### Data transformation
-calculate the rank corresponding to the raw data, that is, sort the metabolite data in ascending order, and the subscript of the sorting is the rank of the raw data.
-```c
-aaaaaaaaaaaaaaaaaaaa
-```
+calculate the rank corresponding to the raw data, that is, sort the metabolite data in ascending order, and the subscript of the sorting is the rank of the raw data.  
+You can use the `ReadExcelFile.exe` program in the `RANK` folder for data transformation. Detailed instructions are available in the `Instruction.docx` file.
 ### Adjust the format of the rank data of training set and establish PLS model based on the rank data
 ```r
 table_test<- read_excel ("GSE90028.xls",4)
